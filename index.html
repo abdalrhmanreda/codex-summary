@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django & DRF — ملخص دراستي</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;600;700&family=Cairo:wght@300;400;700;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg: #DAF1DE;
+            --surface: #8EB69B;
+            --card: #E6F4EA;
+            --border: #235347;
+            --accent: #235347;
+            --accent2: #163832;
+            --accent3: #0B2B26;
+            --accent4: #051F20;
+            --text: #163832;
+            --text-muted: #235347;
+            --glow: 0 0 24px rgba(35, 83, 71, 0.15);
+            --glow2: 0 0 24px rgba(35, 83, 71, 0.10);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: linear-gradient(135deg, #DAF1DE 0%, #8EB69B 40%, #235347 65%, #163832 80%, #0B2B26 95%, #051F20 100%);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Removed grid background for a clear gradient look */
+
+        /* Floating orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.15;
+        }
+
+        .orb1 {
+            width: 500px;
+            height: 500px;
+            background: #235347;
+            top: -100px;
+            right: -100px;
+            animation: drift1 12s ease-in-out infinite;
+            opacity: 0.25;
+        }
+
+        .orb2 {
+            width: 400px;
+            height: 400px;
+            background: #163832;
+            bottom: -100px;
+            left: -100px;
+            animation: drift2 15s ease-in-out infinite;
+            opacity: 0.25;
+        }
+
+        .orb3 {
+            width: 300px;
+            height: 300px;
+            background: #8EB69B;
+            top: 50%;
+            left: 50%;
+            animation: drift3 10s ease-in-out infinite;
+            opacity: 0.06;
+        }
+
+        @keyframes drift1 {
+
+            0%,
+            100% {
+                transform: translate(0, 0)
+            }
+
+            50% {
+                transform: translate(-50px, 60px)
+            }
+        }
+
+        @keyframes drift2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0)
+            }
+
+            50% {
+                transform: translate(60px, -50px)
+            }
+        }
+
+        @keyframes drift3 {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1)
+            }
+
+            50% {
+                transform: translate(-50%, -50%) scale(1.2)
+            }
+        }
+
+        /* Content wrapper */
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 60px 20px;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(142, 182, 155, 0.12);
+            border: 1px solid rgba(142, 182, 155, 0.35);
+            color: var(--accent2);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            padding: 6px 16px;
+            border-radius: 100px;
+            margin-bottom: 32px;
+            animation: fadeSlideDown 0.8s ease forwards;
+            letter-spacing: 2px;
+        }
+
+        .hero-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: 0.4;
+                transform: scale(0.8)
+            }
+        }
+
+        .hero h1 {
+            font-size: clamp(48px, 9vw, 100px);
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 8px;
+            animation: fadeSlideDown 0.8s 0.1s ease both;
+        }
+
+        .hero h1 .django {
+            color: #DAF1DE;
+        }
+
+        .hero h1 .drf {
+            color: #8EB69B;
+        }
+
+        .hero-subtitle {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: clamp(14px, 2vw, 18px);
+            color: var(--text-muted);
+            margin-bottom: 48px;
+            animation: fadeSlideDown 0.8s 0.2s ease both;
+        }
+
+        .hero-subtitle span {
+            color: #DAF1DE;
+        }
+
+        /* Animated flow preview in hero */
+        .hero-flow {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            animation: fadeSlideDown 0.8s 0.3s ease both;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .flow-node {
+            background: #0B2B26;
+            border: 1px solid #235347;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            color: #8EB69B;
+            position: relative;
+            white-space: nowrap;
+            transition: all 0.3s ease;
+        }
+
+        .flow-node:hover {
+            background: #163832;
+            border-color: #8EB69B;
+            color: #DAF1DE;
+            box-shadow: 0 0 16px rgba(142, 182, 155, 0.2);
+        }
+
+        .flow-arrow {
+            font-size: 18px;
+            color: var(--text-muted);
+            padding: 0 8px;
+            animation: arrowPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes arrowPulse {
+
+            0%,
+            100% {
+                opacity: 0.3
+            }
+
+            50% {
+                opacity: 1
+            }
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 12px;
+            font-family: 'IBM Plex Mono', monospace;
+            animation: fadeSlideDown 1s 0.6s ease both;
+        }
+
+        .scroll-mouse {
+            width: 24px;
+            height: 38px;
+            border: 2px solid var(--text-muted);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            padding-top: 6px;
+        }
+
+        .scroll-wheel {
+            width: 3px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 2px;
+            animation: scrollWheel 1.5s ease-in-out infinite;
+        }
+
+        @keyframes scrollWheel {
+            0% {
+                transform: translateY(0);
+                opacity: 1
+            }
+
+            100% {
+                transform: translateY(10px);
+                opacity: 0
+            }
+        }
+
+        /* ===== SECTION ===== */
+        .section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 80px 24px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 56px;
+        }
+
+        .section-tag {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 3px;
+            color: var(--accent);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .section-title {
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 900;
+            color: var(--text);
+        }
+
+        .section-title .highlight {
+            color: var(--accent2);
+        }
+
+        /* ===== CARDS ===== */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .card.visible {
+            animation: cardIn 0.6s ease forwards;
+        }
+
+        @keyframes cardIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: var(--glow);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #235347, #8EB69B, #DAF1DE);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+            transform-origin: right;
+        }
+
+        .card:hover::before {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+
+        .card-icon {
+            font-size: 32px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .card-title {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .card-body {
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.7;
+            direction: rtl;
+        }
+
+        .card-body strong {
+            color: var(--text);
+        }
+
+        /* ===== HTTP METHODS ===== */
+        .methods-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .methods-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .method-card {
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: scale(0.9);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .method-card.visible {
+            animation: scaleIn 0.5s ease forwards;
+        }
+
+        @keyframes scaleIn {
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .method-card:hover {
+            transform: scale(1.03);
+        }
+
+        .method-card.get {
+            background: rgba(218, 241, 222, 0.06);
+            border-color: rgba(218, 241, 222, 0.3);
+        }
+
+        .method-card.post {
+            background: rgba(142, 182, 155, 0.08);
+            border-color: rgba(142, 182, 155, 0.4);
+        }
+
+        .method-card.put {
+            background: rgba(35, 83, 71, 0.35);
+            border-color: rgba(35, 83, 71, 0.9);
+        }
+
+        .method-card.delete {
+            background: rgba(11, 43, 38, 0.5);
+            border-color: rgba(142, 182, 155, 0.2);
+        }
+
+        .method-badge {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .method-card.get .method-badge {
+            color: #DAF1DE;
+        }
+
+        .method-card.post .method-badge {
+            color: #8EB69B;
+        }
+
+        .method-card.put .method-badge {
+            color: #8EB69B;
+        }
+
+        .method-card.delete .method-badge {
+            color: #5a9070;
+        }
+
+        .method-desc {
+            color: var(--text-muted);
+            font-size: 15px;
+            direction: rtl;
+        }
+
+        /* ===== FLOW DIAGRAM ===== */
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+            padding: 40px 0;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            opacity: 0;
+            transform: translateX(40px);
+        }
+
+        .flow-step.visible {
+            animation: slideInRight 0.5s ease forwards;
+        }
+
+        @keyframes slideInRight {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .flow-step-box {
+            background: #0B2B26;
+            border: 1px solid #235347;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 16px;
+            font-weight: 600;
+            color: #8EB69B;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .flow-step-box:hover {
+            border-color: #8EB69B;
+            box-shadow: 0 0 20px rgba(142, 182, 155, 0.25);
+            color: #DAF1DE;
+        }
+
+        .flow-step-desc {
+            color: var(--text-muted);
+            font-size: 14px;
+            max-width: 220px;
+            direction: rtl;
+            text-align: right;
+        }
+
+        .flow-connector {
+            width: 2px;
+            height: 32px;
+            background: linear-gradient(180deg, #8EB69B, #DAF1DE);
+            margin: 4px 0;
+            position: relative;
+            animation: flowPulse 2s ease-in-out infinite;
+        }
+
+        .flow-connector::after {
+            content: '▼';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #DAF1DE;
+            font-size: 12px;
+        }
+
+        @keyframes flowPulse {
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* ===== ARCHITECTURE ===== */
+        .arch-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0;
+            position: relative;
+        }
+
+        @media (max-width: 768px) {
+            .arch-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 16px;
+            }
+
+            .arch-arrow {
+                display: none;
+            }
+        }
+
+        .arch-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 24px 16px;
+            position: relative;
+            opacity: 0;
+        }
+
+        .arch-step.visible {
+            animation: fadeUp 0.5s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .arch-step:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .arch-step:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .arch-step:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+
+        .arch-step:nth-child(4) {
+            animation-delay: 0.45s;
+        }
+
+        .arch-number {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #235347, #8EB69B);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 700;
+            font-size: 18px;
+            color: #DAF1DE;
+            margin-bottom: 14px;
+            box-shadow: 0 0 20px rgba(142, 182, 155, 0.25);
+        }
+
+        .arch-name {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .arch-desc {
+            color: var(--text-muted);
+            font-size: 13px;
+            line-height: 1.6;
+            direction: rtl;
+        }
+
+        .arch-arrow-line {
+            position: absolute;
+            top: 28px;
+            right: 0;
+            transform: translateX(50%);
+            color: var(--text-muted);
+            font-size: 20px;
+            z-index: 2;
+        }
+
+        /* ===== ORM TABLE ===== */
+        .orm-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 14px;
+            direction: ltr;
+        }
+
+        .orm-table thead tr {
+            background: rgba(35, 83, 71, 0.35);
+        }
+
+        .orm-table th {
+            padding: 14px 20px;
+            color: #DAF1DE;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .orm-table td {
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(30, 58, 95, 0.5);
+            color: var(--text-muted);
+        }
+
+        .orm-table tr:hover td {
+            background: rgba(0, 212, 255, 0.03);
+            color: var(--text);
+        }
+
+        .orm-table .code {
+            color: var(--accent2);
+        }
+
+        /* ===== CODE BLOCK ===== */
+        .code-block {
+            background: #051F20;
+            border: 1px solid #163832;
+            border-radius: 12px;
+            padding: 24px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            line-height: 1.8;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .code-block .lang-tag {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 10px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        .code-block .kw {
+            color: #8EB69B;
+        }
+
+        .code-block .cls {
+            color: #DAF1DE;
+        }
+
+        .code-block .fn {
+            color: #a8d5b5;
+        }
+
+        .code-block .str {
+            color: #DAF1DE;
+            opacity: 0.85;
+        }
+
+        .code-block .cm {
+            color: #235347;
+            font-style: italic;
+        }
+
+        .code-block .var {
+            color: #8EB69B;
+        }
+
+        .code-block .num {
+            color: #DAF1DE;
+            opacity: 0.7;
+        }
+
+        /* ===== DIVIDER ===== */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+            margin: 0 24px;
+        }
+
+        /* ===== ANIMATIONS ===== */
+        @keyframes fadeSlideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-muted);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 13px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer span {
+            color: var(--accent2);
+        }
+
+        /* nav dots */
+        .nav-dots {
+            position: fixed;
+            right: 24px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            border: 1px solid var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-dot:hover,
+        .nav-dot.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: var(--glow);
+        }
+
+        .nav-dot::after {
+            content: attr(data-label);
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            white-space: nowrap;
+            font-size: 11px;
+            font-family: 'IBM Plex Mono', monospace;
+            color: var(--accent);
+            opacity: 0;
+            transition: opacity 0.2s;
+            pointer-events: none;
+        }
+
+        .nav-dot:hover::after {
+            opacity: 1;
+        }
+
+        /* Typing cursor effect */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 1s step-end infinite;
+            color: var(--accent);
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: 0
+            }
+        }
+
+        /* Section separator decoration */
+        .sep-deco {
+            text-align: center;
+            padding: 20px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            color: var(--border);
+            letter-spacing: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+
+    <!-- Navigation dots -->
+    <nav class="nav-dots">
+        <div class="nav-dot active" data-label="الرئيسية" onclick="scrollToSection('hero')"></div>
+        <div class="nav-dot" data-label="HTTP & API" onclick="scrollToSection('http')"></div>
+        <div class="nav-dot" data-label="Methods" onclick="scrollToSection('methods')"></div>
+        <div class="nav-dot" data-label="الـ Flow" onclick="scrollToSection('flow')"></div>
+        <div class="nav-dot" data-label="Architecture" onclick="scrollToSection('arch')"></div>
+        <div class="nav-dot" data-label="ORM" onclick="scrollToSection('orm')"></div>
+        <div class="nav-dot" data-label="Class Views" onclick="scrollToSection('cbv')"></div>
+    </nav>
+
+    <div class="content">
+
+        <!-- ===== HERO ===== -->
+        <section class="hero" id="hero">
+            <div class="hero-badge">ملخص الدراسة</div>
+            <h1>
+                <span class="django">Django</span><br>
+                <span class="drf">& DRF</span>
+            </h1>
+            <p class="hero-subtitle">Django Rest Framework — بناء <span>APIs</span> احترافية</p>
+
+            <div class="hero-flow">
+                <div class="flow-node">Request</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">API</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">View</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Serializer</div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-node">Database</div>
+            </div>
+
+            <div class="scroll-hint">
+                <div class="scroll-mouse">
+                    <div class="scroll-wheel"></div>
+                </div>
+                <span>scroll</span>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- ===== HTTP & API ===== -->
+        <section class="section" id="http">
+            <div class="section-header">
+                <span class="section-tag">// 01 — المفاهيم الأساسية</span>
+                <h2 class="section-title">HTTP, API & <span class="highlight">DRF</span></h2>
+            </div>
+
+            <div class="cards-grid">
+                <div class="card" data-animate>
+                    <span class="card-icon">🌐</span>
+                    <div class="card-title">HTTP</div>
+                    <div class="card-body">
+                        <strong>Hyper Text Transfer Protocol</strong><br><br>
+                        بروتوكول الاتصال بين الـ <strong>Client</strong> والـ <strong>Server</strong>. يُستخدم لنقل
+                        البيانات بينهما عبر الإنترنت.
+                    </div>
+                </div>
+
+                <div class="card" data-animate>
+                    <span class="card-icon">🔌</span>
+                    <div class="card-title">API</div>
+                    <div class="card-body">
+                        <strong>Application Programming Interface</strong><br><br>
+                        واجهة تسمح للتطبيقات بالتواصل مع بعضها البعض — برنامج يستطيع استخدام خدمات برنامج آخر من خلالها.
+                    </div>
+                </div>
+
+                <div class="card" data-animate>
+                    <span class="card-icon">⚙️</span>
+                    <div class="card-title">DRF</div>
+                    <div class="card-body">
+                        <strong>Django Rest Framework</strong><br><br>
+                        Framework قوي يُستخدم لبناء <strong>APIs</strong> باستخدام Django بشكل سريع واحترافي.
+                    </div>
+                </div>
+
+                <div class="card" data-animate>
+                    <span class="card-icon">🔄</span>
+                    <div class="card-title">Request Flow</div>
+                    <div class="card-body">
+                        المستخدم يرسل <strong>Request</strong> ← الـ API تتحقق منه ← إذا صحيح يتم التنفيذ على
+                        <strong>Database</strong> ← إذا خطأ يُرجع <strong>Error</strong>.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="sep-deco">/* ———————————————————————— */</div>
+
+        <!-- ===== HTTP METHODS ===== -->
+        <section class="section" id="methods">
+            <div class="section-header">
+                <span class="section-tag">// 02 — العمليات</span>
+                <h2 class="section-title"><span class="highlight">HTTP</span> Methods</h2>
+            </div>
+
+            <div class="methods-grid">
+                <div class="method-card get" data-animate>
+                    <div class="method-badge">GET</div>
+                    <div class="method-desc">جلب البيانات من قاعدة البيانات — Read Only</div>
+                </div>
+                <div class="method-card post" data-animate>
+                    <div class="method-badge">POST</div>
+                    <div class="method-desc">إضافة بيانات جديدة إلى قاعدة البيانات</div>
+                </div>
+                <div class="method-card put" data-animate>
+                    <div class="method-badge">PUT</div>
+                    <div class="method-desc">تعديل البيانات الموجودة في قاعدة البيانات</div>
+                </div>
+                <div class="method-card delete" data-animate>
+                    <div class="method-badge">DELETE</div>
+                    <div class="method-desc">حذف البيانات من قاعدة البيانات</div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- ===== DATA FLOW ===== -->
+        <section class="section" id="flow">
+            <div class="section-header">
+                <span class="section-tag">// 03 — تدفق البيانات</span>
+                <h2 class="section-title">Data <span class="highlight">Flow</span></h2>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:start;">
+                <div>
+                    <div class="flow-diagram">
+                        <div class="flow-step" data-animate>
+                            <div>
+                                <div class="flow-step-box">Request</div>
+                            </div>
+                            <div class="flow-step-desc">الطلب من المستخدم (Client)</div>
+                        </div>
+                        <div class="flow-connector"></div>
+                        <div class="flow-step" data-animate>
+                            <div>
+                                <div class="flow-step-box">View</div>
+                            </div>
+                            <div class="flow-step-desc">يستقبل الطلب ويحدد المنطق</div>
+                        </div>
+                        <div class="flow-connector"></div>
+                        <div class="flow-step" data-animate>
+                            <div>
+                                <div class="flow-step-box">Serializer</div>
+                            </div>
+                            <div class="flow-step-desc">يتحقق من البيانات ويحولها</div>
+                        </div>
+                        <div class="flow-connector"></div>
+                        <div class="flow-step" data-animate>
+                            <div>
+                                <div class="flow-step-box">Models</div>
+                            </div>
+                            <div class="flow-step-desc">يمثل البيانات داخل قاعدة البيانات</div>
+                        </div>
+                        <div class="flow-connector"></div>
+                        <div class="flow-step" data-animate>
+                            <div>
+                                <div class="flow-step-box" style="color:var(--accent2);">Database</div>
+                            </div>
+                            <div class="flow-step-desc">تخزين البيانات الفعلية</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div
+                        style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:24px;">
+                        <div
+                            style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--accent); margin-bottom:12px;">
+                            // Django Project Setup</div>
+                        <div class="code-block" style="padding:16px;">
+                            <span class="lang-tag">bash</span>
+                            <span class="cm"># 1. إنشاء المشروع</span><br>
+                            django-admin startproject <span class="var">myproject</span><br><br>
+                            <span class="cm"># 2. إنشاء الـ App</span><br>
+                            python manage.py startapp <span class="var">myapp</span><br><br>
+                            <span class="cm"># 3. Migrations</span><br>
+                            python manage.py makemigrations<br>
+                            python manage.py migrate
+                        </div>
+                    </div>
+
+                    <div
+                        style="background:var(--card); border:1px solid var(--border); border-radius:12px; padding:24px;">
+                        <div
+                            style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#8EB69B; margin-bottom:12px;">
+                            // settings.py</div>
+                        <div class="code-block" style="padding:16px;">
+                            <span class="lang-tag">python</span>
+                            <span class="var">INSTALLED_APPS</span> = [<br>
+                            &nbsp;&nbsp;<span class="str">'rest_framework'</span>,<br>
+                            &nbsp;&nbsp;<span class="str">'myapp'</span>,<br>
+                            &nbsp;&nbsp;<span class="cm">...</span><br>
+                            ]
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="sep-deco">/* ———————————————————————— */</div>
+
+        <!-- ===== ARCHITECTURE ===== -->
+        <section class="section" id="arch">
+            <div class="section-header">
+                <span class="section-tag">// 04 — البنية</span>
+                <h2 class="section-title">DRF <span class="highlight">Architecture</span></h2>
+            </div>
+
+            <div style="background:var(--card); border:1px solid var(--border); border-radius:16px; padding:40px;">
+                <div class="arch-grid">
+                    <div class="arch-step" data-animate>
+                        <div class="arch-number">01</div>
+                        <div class="arch-name">Models</div>
+                        <div class="arch-desc">تمثل البيانات وهيكل قاعدة البيانات</div>
+                    </div>
+                    <div class="arch-step" data-animate>
+                        <div class="arch-number">02</div>
+                        <div class="arch-name">Serializer</div>
+                        <div class="arch-desc">يحوّل بين Object ↔ JSON ويتحقق من البيانات</div>
+                    </div>
+                    <div class="arch-step" data-animate>
+                        <div class="arch-number">03</div>
+                        <div class="arch-name">View</div>
+                        <div class="arch-desc">يحتوي على منطق الـ API (GET, POST, PUT, DELETE)</div>
+                    </div>
+                    <div class="arch-step" data-animate>
+                        <div class="arch-number">04</div>
+                        <div class="arch-name">URL</div>
+                        <div class="arch-desc">يحدد المسار الذي يؤدي إلى الـ View</div>
+                    </div>
+                </div>
+
+                <div style="text-align:center; margin-top:32px; padding-top:24px; border-top:1px solid var(--border);">
+                    <div style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:var(--text-muted);">
+                        <span style="color:var(--accent);">Models</span>
+                        <span style="color:var(--border); margin:0 8px;">→</span>
+                        <span style="color:var(--accent2);">Serializer</span>
+                        <span style="color:var(--border); margin:0 8px;">→</span>
+                        <span style="color:var(--accent3);">View</span>
+                        <span style="color:var(--border); margin:0 8px;">→</span>
+                        <span style="color:var(--accent4);">URL</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="divider"></div>
+
+        <!-- ===== ORM LOOKUPS ===== -->
+        <section class="section" id="orm">
+            <div class="section-header">
+                <span class="section-tag">// 05 — الاستعلامات</span>
+                <h2 class="section-title">Django <span class="highlight">ORM</span> Lookups</h2>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                <div>
+                    <div
+                        style="background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden;">
+                        <table class="orm-table">
+                            <thead>
+                                <tr>
+                                    <th>التعبير</th>
+                                    <th>المعنى</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="code">field__gt</td>
+                                    <td>أكبر من &gt;</td>
+                                </tr>
+                                <tr>
+                                    <td class="code">field__gte</td>
+                                    <td>أكبر من أو يساوي ≥</td>
+                                </tr>
+                                <tr>
+                                    <td class="code">field__lt</td>
+                                    <td>أصغر من &lt;</td>
+                                </tr>
+                                <tr>
+                                    <td class="code">field__lte</td>
+                                    <td>أصغر من أو يساوي ≤</td>
+                                </tr>
+                                <tr>
+                                    <td class="code">field__exact</td>
+                                    <td>يساوي تمامًا =</td>
+                                </tr>
+                                <tr>
+                                    <td class="code">field__contains</td>
+                                    <td>يحتوي على نص</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:16px;">
+                    <div class="code-block">
+                        <span class="lang-tag">python</span>
+                        <span class="cm"># Model</span><br>
+                        <span class="kw">class</span> <span class="cls">Product</span>(models.Model):<br>
+                        &nbsp;&nbsp;name = models.<span class="fn">CharField</span>(<span
+                            class="var">max_length</span>=<span class="num">100</span>)<br>
+                        &nbsp;&nbsp;stock = models.<span class="fn">IntegerField</span>()<br><br>
+                        <span class="cm"># المنتجات التي stock > 10</span><br>
+                        <span class="cls">Product</span>.objects.<span class="fn">filter</span>(stock__gt=<span
+                            class="num">10</span>)<br><br>
+                        <span class="cm"># المنتجات المتوفرة (stock > 0)</span><br>
+                        <span class="cls">Product</span>.objects.<span class="fn">filter</span>(stock__gt=<span
+                            class="num">0</span>)
+                    </div>
+
+                    <div
+                        style="background:rgba(35,83,71,0.2); border:1px solid rgba(142,182,155,0.2); border-radius:12px; padding:20px; direction:rtl;">
+                        <div
+                            style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--accent2); margin-bottom:8px;">
+                            // SQL المكافئ</div>
+                        <div style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--text-muted);">
+                            SELECT * FROM product<br>
+                            WHERE <span style="color:var(--accent2);">stock > 10</span>;
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="sep-deco">/* ———————————————————————— */</div>
+
+        <!-- ===== CLASS BASED VIEWS ===== -->
+        <section class="section" id="cbv">
+            <div class="section-header">
+                <span class="section-tag">// 06 — الـ Views</span>
+                <h2 class="section-title">Class Based <span class="highlight">Views</span></h2>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:24px;">
+                <div class="card" data-animate>
+                    <span class="card-icon">🗂️</span>
+                    <div class="card-title">QuerySet</div>
+                    <div class="card-body">
+                        يحدد <strong>البيانات التي سيتم جلبها</strong> من قاعدة البيانات.<br><br>
+                        يتحكم في <em>أي بيانات</em> ستُعرض في الـ API.
+                        <div class="code-block" style="margin-top:12px; padding:12px; font-size:12px;">
+                            queryset = <span class="cls">Product</span>.objects.<span class="fn">all</span>()<br>
+                            <span class="cm"># أو بشرط:</span><br>
+                            queryset = <span class="cls">Product</span>.objects.<span
+                                class="fn">filter</span>(stock__gt=<span class="num">0</span>)
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" data-animate>
+                    <span class="card-icon">🔀</span>
+                    <div class="card-title">Serializer</div>
+                    <div class="card-body">
+                        يحدد <strong>كيف ستظهر البيانات</strong> في الـ API — يحول Object إلى JSON والعكس، ويتحقق من صحة
+                        البيانات.
+                        <div class="code-block" style="margin-top:12px; padding:12px; font-size:12px;">
+                            serializer_class = <span class="cls">ProductSerializer</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-block" style="font-size:14px;">
+                <span class="lang-tag">python</span>
+                <span class="kw">from</span> rest_framework.generics <span class="kw">import</span> ListAPIView<br>
+                <span class="kw">from</span> .models <span class="kw">import</span> <span class="cls">Product</span><br>
+                <span class="kw">from</span> .serializers <span class="kw">import</span> <span
+                    class="cls">ProductSerializer</span><br><br>
+                <span class="kw">class</span> <span class="cls">ProductListView</span>(ListAPIView):<br>
+                &nbsp;&nbsp;<span class="cm"># أي بيانات سنجلب؟</span><br>
+                &nbsp;&nbsp;queryset = <span class="cls">Product</span>.objects.<span class="fn">all</span>()<br><br>
+                &nbsp;&nbsp;<span class="cm"># كيف ستظهر البيانات؟</span><br>
+                &nbsp;&nbsp;serializer_class = <span class="cls">ProductSerializer</span>
+            </div>
+
+            <div
+                style="margin-top:24px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:24px;">
+                <div
+                    style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:var(--accent); margin-bottom:16px; text-align:center;">
+                    // تدفق البيانات في Class Based View</div>
+                <div
+                    style="display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; font-family:'IBM Plex Mono',monospace; font-size:14px;">
+                    <span
+                        style="background:rgba(5,31,32,0.8); border:1px solid #235347; padding:8px 16px; border-radius:8px; color:#8EB69B;">Database</span>
+                    <span style="color:var(--text-muted);">→</span>
+                    <span
+                        style="background:rgba(22,56,50,0.6); border:1px solid #235347; padding:8px 16px; border-radius:8px; color:#DAF1DE;">QuerySet</span>
+                    <span style="color:var(--text-muted);">→</span>
+                    <span
+                        style="background:rgba(35,83,71,0.4); border:1px solid #8EB69B; padding:8px 16px; border-radius:8px; color:#8EB69B;">Serializer</span>
+                    <span style="color:var(--text-muted);">→</span>
+                    <span
+                        style="background:rgba(142,182,155,0.1); border:1px solid #8EB69B; padding:8px 16px; border-radius:8px; color:#DAF1DE;">View</span>
+                    <span style="color:var(--text-muted);">→</span>
+                    <span
+                        style="background:rgba(218,241,222,0.08); border:1px solid #DAF1DE; padding:8px 16px; border-radius:8px; color:#DAF1DE;">JSON
+                        Response</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== FOOTER ===== -->
+        <footer class="footer">
+            <div style="margin-bottom:8px;">
+                <span style="font-size:22px;">🚀</span>
+            </div>
+            <div>Django & DRF — <span>ملخص دراستي</span></div>
+            <div style="margin-top:8px; font-size:11px; opacity:0.5;">Models → Serializer → View → URL</div>
+        </footer>
+
+    </div>
+
+    <script>
+        // ===== Intersection Observer for animations =====
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, i) => {
+                if (entry.isIntersecting) {
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, entry.target.dataset.delay || 0);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.15 });
+
+        document.querySelectorAll('[data-animate]').forEach((el, i) => {
+            el.dataset.delay = (i % 4) * 120;
+            observer.observe(el);
+        });
+
+        document.querySelectorAll('.flow-step, .arch-step').forEach((el, i) => {
+            el.dataset.delay = i * 150;
+            observer.observe(el);
+        });
+
+        // ===== Nav dots active state =====
+        const sections = ['hero', 'http', 'methods', 'flow', 'arch', 'orm', 'cbv'];
+        const dots = document.querySelectorAll('.nav-dot');
+
+        const sectionObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const idx = sections.indexOf(entry.target.id);
+                    dots.forEach(d => d.classList.remove('active'));
+                    if (idx >= 0) dots[idx].classList.add('active');
+                }
+            });
+        }, { threshold: 0.4 });
+
+        sections.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) sectionObserver.observe(el);
+        });
+
+        function scrollToSection(id) {
+            document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ===== Stagger card animations =====
+        document.querySelectorAll('.card').forEach((card, i) => {
+            card.style.animationDelay = (i * 0.1) + 's';
+        });
+    </script>
+</body>
+
+</html>
